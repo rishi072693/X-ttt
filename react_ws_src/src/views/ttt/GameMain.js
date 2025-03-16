@@ -1,4 +1,4 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react'
 
 import io from 'socket.io-client'
 
@@ -9,7 +9,7 @@ import rand_to_fro from '../../helpers/rand_to_fro'
 
 export default class SetName extends Component {
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 
 		this.win_sets = [
@@ -47,30 +47,30 @@ export default class SetName extends Component {
 
 //	------------------------	------------------------	------------------------
 
-	componentDidMount () {
-    	TweenMax.from('#game_stat', 1, {display: 'none', opacity: 0, scaleX:0, scaleY:0, ease: Power4.easeIn})
-    	TweenMax.from('#game_board', 1, {display: 'none', opacity: 0, x:-200, y:-200, scaleX:0, scaleY:0, ease: Power4.easeIn})
+	componentDidMount() {
+		TweenMax.from('#game_stat', 1, { display: 'none', opacity: 0, scaleX: 0, scaleY: 0, ease: Power4.easeIn })
+		TweenMax.from('#game_board', 1, { display: 'none', opacity: 0, x: -200, y: -200, scaleX: 0, scaleY: 0, ease: Power4.easeIn })
 	}
 
 //	------------------------	------------------------	------------------------
 //	------------------------	------------------------	------------------------
 
-	sock_start () {
+	sock_start() {
 
 		this.socket = io(app.settings.ws_conf.loc.SOCKET__io.u);
 
-		this.socket.on('connect', function(data) { 
+		this.socket.on('connect', function (data) {
 			// console.log('socket connected', data)
 
 			this.socket.emit('new player', { name: app.settings.curr_user.name });
 
 		}.bind(this));
 
-		this.socket.on('pair_players', function(data) { 
+		this.socket.on('pair_players', function (data) {
 			// console.log('paired with ', data)
 
 			this.setState({
-				next_turn_ply: data.mode=='m',
+				next_turn_ply: data.mode == 'm',
 				game_play: true,
 				game_stat: 'Playing with ' + data.opp.name
 			})
@@ -87,25 +87,25 @@ export default class SetName extends Component {
 //	------------------------	------------------------	------------------------
 //	------------------------	------------------------	------------------------
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 
 		this.socket && this.socket.disconnect();
 	}
 
 //	------------------------	------------------------	------------------------
 
-	cell_cont (c) {
+	cell_cont(c) {
 		const { cell_vals } = this.state
 
 		return (<div>
-		        	{cell_vals && cell_vals[c]=='x' && <i className="fa fa-times fa-5x"></i>}
-					{cell_vals && cell_vals[c]=='o' && <i className="fa fa-circle-o fa-5x"></i>}
+			{cell_vals && cell_vals[c] == 'x' && <i className="fa fa-times fa-5x"></i>}
+			{cell_vals && cell_vals[c] == 'o' && <i className="fa fa-circle-o fa-5x"></i>}
 				</div>)
 	}
 
 //	------------------------	------------------------	------------------------
 
-	render () {
+	render() {
 		const { cell_vals } = this.state
 		// console.log(cell_vals)
 
@@ -150,7 +150,7 @@ export default class SetName extends Component {
 //	------------------------	------------------------	------------------------
 //	------------------------	------------------------	------------------------
 
-	click_cell (e) {
+	click_cell(e) {
 		// console.log(e.currentTarget.id.substr(11))
 		// console.log(e.currentTarget)
 
@@ -168,13 +168,13 @@ export default class SetName extends Component {
 //	------------------------	------------------------	------------------------
 //	------------------------	------------------------	------------------------
 
-	turn_ply_comp (cell_id) {
+	turn_ply_comp(cell_id) {
 
 		let { cell_vals } = this.state
 
 		cell_vals[cell_id] = 'x'
 
-		TweenMax.from(this.refs[cell_id], 0.7, {opacity: 0, scaleX:0, scaleY:0, ease: Power4.easeOut})
+		TweenMax.from(this.refs[cell_id], 0.7, { opacity: 0, scaleX: 0, scaleY: 0, ease: Power4.easeOut })
 
 
 		// this.setState({
@@ -191,20 +191,20 @@ export default class SetName extends Component {
 
 //	------------------------	------------------------	------------------------
 
-	turn_comp () {
+	turn_comp() {
 
 		let { cell_vals } = this.state
 		let empty_cells_arr = []
 
 
-		for (let i=1; i<=9; i++) 
-			!cell_vals['c'+i] && empty_cells_arr.push('c'+i)
+		for (let i = 1; i <= 9; i++)
+			!cell_vals['c' + i] && empty_cells_arr.push('c' + i)
 		// console.log(cell_vals, empty_cells_arr, rand_arr_elem(empty_cells_arr))
 
 		const c = rand_arr_elem(empty_cells_arr)
 		cell_vals[c] = 'o'
 
-		TweenMax.from(this.refs[c], 0.7, {opacity: 0, scaleX:0, scaleY:0, ease: Power4.easeOut})
+		TweenMax.from(this.refs[c], 0.7, { opacity: 0, scaleX: 0, scaleY: 0, ease: Power4.easeOut })
 
 
 		// this.setState({
@@ -221,13 +221,13 @@ export default class SetName extends Component {
 //	------------------------	------------------------	------------------------
 //	------------------------	------------------------	------------------------
 
-	turn_ply_live (cell_id) {
+	turn_ply_live(cell_id) {
 
 		let { cell_vals } = this.state
 
 		cell_vals[cell_id] = 'x'
 
-		TweenMax.from(this.refs[cell_id], 0.7, {opacity: 0, scaleX:0, scaleY:0, ease: Power4.easeOut})
+		TweenMax.from(this.refs[cell_id], 0.7, { opacity: 0, scaleX: 0, scaleY: 0, ease: Power4.easeOut })
 
 		this.socket.emit('ply_turn', { cell_id: cell_id });
 
@@ -245,7 +245,7 @@ export default class SetName extends Component {
 
 //	------------------------	------------------------	------------------------
 
-	turn_opp_live (data) {
+	turn_opp_live(data) {
 
 		let { cell_vals } = this.state
 		let empty_cells_arr = []
@@ -254,7 +254,7 @@ export default class SetName extends Component {
 		const c = data.cell_id
 		cell_vals[c] = 'o'
 
-		TweenMax.from(this.refs[c], 0.7, {opacity: 0, scaleX:0, scaleY:0, ease: Power4.easeOut})
+		TweenMax.from(this.refs[c], 0.7, { opacity: 0, scaleX: 0, scaleY: 0, ease: Power4.easeOut })
 
 
 		// this.setState({
@@ -271,7 +271,7 @@ export default class SetName extends Component {
 //	------------------------	------------------------	------------------------
 //	------------------------	------------------------	------------------------
 
-	check_turn () {
+	check_turn() {
 
 		const { cell_vals } = this.state
 
@@ -279,19 +279,19 @@ export default class SetName extends Component {
 		let set
 		let fin = true
 
-		if (this.props.game_type!='live')
+		if (this.props.game_type != 'live')
 			this.state.game_stat = 'Play'
 
 
-		for (let i=0; !win && i<this.win_sets.length; i++) {
+		for (let i = 0; !win && i < this.win_sets.length; i++) {
 			set = this.win_sets[i]
-			if (cell_vals[set[0]] && cell_vals[set[0]]==cell_vals[set[1]] && cell_vals[set[0]]==cell_vals[set[2]])
+			if (cell_vals[set[0]] && cell_vals[set[0]] == cell_vals[set[1]] && cell_vals[set[0]] == cell_vals[set[2]])
 				win = true
 		}
 
 
-		for (let i=1; i<=9; i++) 
-			!cell_vals['c'+i] && (fin = false)
+		for (let i = 1; i <= 9; i++)
+			!cell_vals['c' + i] && (fin = false)
 
 		// win && console.log('win set: ', set)
 
@@ -302,10 +302,10 @@ export default class SetName extends Component {
 			this.refs[set[2]].classList.add('win')
 
 			TweenMax.killAll(true)
-			TweenMax.from('td.win', 1, {opacity: 0, ease: Linear.easeIn})
+			TweenMax.from('td.win', 1, { opacity: 0, ease: Linear.easeIn })
 
 			this.setState({
-				game_stat: (cell_vals[set[0]]=='x'?'You':'Opponent')+' win',
+				game_stat: (cell_vals[set[0]] == 'x' ? 'You' : 'Opponent') + ' win',
 				game_play: false
 			})
 
@@ -321,7 +321,7 @@ export default class SetName extends Component {
 			this.socket && this.socket.disconnect();
 
 		} else {
-			this.props.game_type!='live' && this.state.next_turn_ply && setTimeout(this.turn_comp.bind(this), rand_to_fro(500, 1000));
+			this.props.game_type != 'live' && this.state.next_turn_ply && setTimeout(this.turn_comp.bind(this), rand_to_fro(500, 1000));
 
 			this.setState({
 				next_turn_ply: !this.state.next_turn_ply
@@ -332,7 +332,7 @@ export default class SetName extends Component {
 
 //	------------------------	------------------------	------------------------
 
-	end_game () {
+	end_game() {
 		this.socket && this.socket.disconnect();
 
 		this.props.onEndGame()
