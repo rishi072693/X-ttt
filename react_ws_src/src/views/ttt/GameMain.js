@@ -76,6 +76,13 @@ export default class SetName extends Component {
 			})
 
 		}.bind(this));
+		
+		//event to handle player with same name
+		this.socket.on('player_already_exist', function (data) {
+
+			this.handleNameExists(data)
+
+		}.bind(this));
 
 
 		this.socket.on('opp_turn', this.turn_opp_live.bind(this));
@@ -147,6 +154,13 @@ export default class SetName extends Component {
 		)
 	}
 
+	handleNameExists(data) {
+		console.log(data)
+		this.socket.disconnect();
+		alert(data)
+		app.settings.curr_user = {}
+		this.props.onSetType(null)
+	}
 //	------------------------	------------------------	------------------------
 //	------------------------	------------------------	------------------------
 

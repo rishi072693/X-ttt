@@ -8,6 +8,13 @@ function onNewPlayer(data) {
 
 	util.log("New player has joined: "+data.name);
 
+	//Check if player already exists
+	let exists=false
+	if(playerAlreadyExist(data)){
+		util.log("Player already exists");
+		exists = true
+	}
+
 	// Create a new player
 	var newPlayer = new Player(-1, data.name, "looking");
 	newPlayer.sockid = this.id;
@@ -19,6 +26,11 @@ function onNewPlayer(data) {
 	players_avail.push(newPlayer);
 
 	// util.log("looking for pair - uid:"+newPlayer.uid + " ("+newPlayer.name + ")");
+	//Event for player already exists
+	if(exists){
+		emitPlayerAlreadyExist(this.id,data.name)
+		return
+	}
 
 	pair_avail_players();
 
@@ -27,6 +39,19 @@ function onNewPlayer(data) {
 	// updAdmin("new player connected - uid:"+data.uid + " - "+data.name);
 
 };
+function playerAlreadyExist (newPlayerData) {
+	if(players.length > 0) {
+		let sameNamePlayers = players.filter((player) => player.name == newPlayerData.name) 
+		if(sameNamePlayers.length > 0) {
+			return true
+		}
+	}
+	return false
+}
+
+function emitPlayerAlreadyExist(playerSockId,playerName){
+	io.to(playerSockId).emit("player_already_exist", `player already exist with ${playerName} please change the name`)
+}
 
 // ----	--------------------------------------------	--------------------------------------------	
 
