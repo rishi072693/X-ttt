@@ -40,20 +40,22 @@ export default class SetName extends Component {
 				cell_vals: {},
 				next_turn_ply: true,
 				game_play: false,
-				game_stat: 'Connecting'
+				game_stat: 'Connecting',
+				messages: [],
+				messageInput: ''
 			}
 		}
 	}
 
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	componentDidMount() {
 		TweenMax.from('#game_stat', 1, { display: 'none', opacity: 0, scaleX: 0, scaleY: 0, ease: Power4.easeIn })
 		TweenMax.from('#game_board', 1, { display: 'none', opacity: 0, x: -200, y: -200, scaleX: 0, scaleY: 0, ease: Power4.easeIn })
 	}
 
-//	------------------------	------------------------	------------------------
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	sock_start() {
 
@@ -98,21 +100,32 @@ export default class SetName extends Component {
 			this.clearWinState();
 		}.bind(this));
 
+		//Chat event
+		this.socket.on('chat_message', (msg) => {
+			this.setState((prevState) => ({ messages: [...prevState.messages, msg] }));
+		});
+		
+		//chatevent error
+		this.socket.on('chat_error', (msg) => {
+			alert(msg)
+		});
+
+
 		this.socket.on('opp_turn', this.turn_opp_live.bind(this));
 
 
 
 	}
 
-//	------------------------	------------------------	------------------------
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	componentWillUnmount() {
 
 		this.socket && this.socket.disconnect();
 	}
 
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	cell_cont(c) {
 		const { cell_vals } = this.state
@@ -120,53 +133,82 @@ export default class SetName extends Component {
 		return (<div>
 			{cell_vals && cell_vals[c] == 'x' && <i className="fa fa-times fa-5x"></i>}
 			{cell_vals && cell_vals[c] == 'o' && <i className="fa fa-circle-o fa-5x"></i>}
-				</div>)
+		</div>)
 	}
 
-//	------------------------	------------------------	------------------------
+	//Function to send message and trigger messsage event
+	sendMessage() {
+		const { messageInput } = this.state;
+		if (messageInput.trim()) {
+			this.socket.emit('chat_message', messageInput);
+			this.setState((prevState) => ({ messages: [...prevState.messages, { from: 'You: ', text: messageInput, timestamp: new Date().toISOString() }], messageInput: '' }));
+		}
+	};
+
+	//	------------------------	------------------------	------------------------
 
 	render() {
 		const { cell_vals } = this.state
 		// console.log(cell_vals)
 
 		return (
-			<div id='GameMain'>
+			<div id='GameContainer' style={{ display: 'flex', justifyContent: 'center', alignItems: 'centre', gap: '40px', padding: '20px' }}>
+				<div id='GameMain' className='w-2/3 p-4' style={{ textAlign: 'center', justifyContent: 'center' }}>
 
-				<h1>Play {this.props.game_type}</h1>
+					<h1>Play {this.props.game_type}</h1>
 
-				<div id="game_stat">
-					<div id="game_stat_msg">{this.state.game_stat}</div>
-					{this.state.game_play && <div id="game_turn_msg">{this.state.next_turn_ply ? 'Your turn' : 'Opponent turn'}</div>}
-				</div>
+					<div id="game_stat">
+						<div id="game_stat_msg">{this.state.game_stat}</div>
+						{this.state.game_play && <div id="game_turn_msg">{this.state.next_turn_ply ? 'Your turn' : 'Opponent turn'}</div>}
+					</div>
 
-				<div id="game_board">
-					<table>
-					<tbody>
-						<tr>
-							<td id='game_board-c1' ref='c1' onClick={this.click_cell.bind(this)}> {this.cell_cont('c1')} </td>
-							<td id='game_board-c2' ref='c2' onClick={this.click_cell.bind(this)} className="vbrd"> {this.cell_cont('c2')} </td>
-							<td id='game_board-c3' ref='c3' onClick={this.click_cell.bind(this)}> {this.cell_cont('c3')} </td>
-						</tr>
-						<tr>
-							<td id='game_board-c4' ref='c4' onClick={this.click_cell.bind(this)} className="hbrd"> {this.cell_cont('c4')} </td>
-							<td id='game_board-c5' ref='c5' onClick={this.click_cell.bind(this)} className="vbrd hbrd"> {this.cell_cont('c5')} </td>
-							<td id='game_board-c6' ref='c6' onClick={this.click_cell.bind(this)} className="hbrd"> {this.cell_cont('c6')} </td>
-						</tr>
-						<tr>
-							<td id='game_board-c7' ref='c7' onClick={this.click_cell.bind(this)}> {this.cell_cont('c7')} </td>
-							<td id='game_board-c8' ref='c8' onClick={this.click_cell.bind(this)} className="vbrd"> {this.cell_cont('c8')} </td>
-							<td id='game_board-c9' ref='c9' onClick={this.click_cell.bind(this)}> {this.cell_cont('c9')} </td>
-						</tr>
-					</tbody>
-					</table>
-				</div>
+					<div id="game_board">
+						<table>
+							<tbody>
+								<tr>
+									<td id='game_board-c1' ref='c1' onClick={this.click_cell.bind(this)}> {this.cell_cont('c1')} </td>
+									<td id='game_board-c2' ref='c2' onClick={this.click_cell.bind(this)} className="vbrd"> {this.cell_cont('c2')} </td>
+									<td id='game_board-c3' ref='c3' onClick={this.click_cell.bind(this)}> {this.cell_cont('c3')} </td>
+								</tr>
+								<tr>
+									<td id='game_board-c4' ref='c4' onClick={this.click_cell.bind(this)} className="hbrd"> {this.cell_cont('c4')} </td>
+									<td id='game_board-c5' ref='c5' onClick={this.click_cell.bind(this)} className="vbrd hbrd"> {this.cell_cont('c5')} </td>
+									<td id='game_board-c6' ref='c6' onClick={this.click_cell.bind(this)} className="hbrd"> {this.cell_cont('c6')} </td>
+								</tr>
+								<tr>
+									<td id='game_board-c7' ref='c7' onClick={this.click_cell.bind(this)}> {this.cell_cont('c7')} </td>
+									<td id='game_board-c8' ref='c8' onClick={this.click_cell.bind(this)} className="vbrd"> {this.cell_cont('c8')} </td>
+									<td id='game_board-c9' ref='c9' onClick={this.click_cell.bind(this)}> {this.cell_cont('c9')} </td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					{/* <button onClick={this.reset.bind(this)}>reset</button> */}
 
-				<button type='submit' onClick={this.end_game.bind(this)} className='button'><span>End Game <span className='fa fa-caret-right'></span></span></button>
+					<button type='submit' onClick={this.end_game.bind(this)} className='button'><span>End Game <span className='fa fa-caret-right'></span></span></button>
 					&nbsp;
 					&nbsp;
 					&nbsp;
 					{this.props.game_type == 'live' ? <button type='submit' onClick={this.handleRematch.bind(this)} className='button'><span>Rematch <span className='fa fa-caret-right'></span></span></button> : null}
 
+				</div>
+				{this.props.game_type == 'live' ?<div id='ChatBox' style={{ width: '300px', border: '1px solid #ccc', padding: '15px', borderRadius: '5px', backgroundColor: '#f9f9f9' }}>
+					<h2>Chat</h2>
+					<div className='chat-messages h-64 overflow-auto border p-2'>
+						{Array.isArray(this.state.messages) && this.state.messages.length > 0 ? this.state.messages.map((msg, index) => (
+							<div key={index} className='p-1'>{`${msg.from}:${msg.text}`}</div>
+						)) : null}
+					</div>
+					<div className='chat-input mt-2'>
+						<input
+							type='text'
+							value={this.state.messageInput}
+							onChange={(e) => this.setState({ messageInput: e.target.value })}
+							className='border p-1 w-full'
+						/>
+						<button onClick={this.sendMessage.bind(this)} className='button mt-1 w-full'>Send</button>
+					</div>
+				</div>:null}
 			</div>
 		)
 	}
@@ -178,8 +220,8 @@ export default class SetName extends Component {
 		app.settings.curr_user = {}
 		this.props.onSetType(null)
 	}
-//	------------------------	------------------------	------------------------
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	click_cell(e) {
 		// console.log(e.currentTarget.id.substr(11))
@@ -196,8 +238,8 @@ export default class SetName extends Component {
 			this.turn_ply_live(cell_id)
 	}
 
-//	------------------------	------------------------	------------------------
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	turn_ply_comp(cell_id) {
 
@@ -220,7 +262,7 @@ export default class SetName extends Component {
 		this.check_turn()
 	}
 
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	turn_comp() {
 
@@ -249,8 +291,8 @@ export default class SetName extends Component {
 	}
 
 
-//	------------------------	------------------------	------------------------
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	turn_ply_live(cell_id) {
 
@@ -274,7 +316,7 @@ export default class SetName extends Component {
 		this.check_turn()
 	}
 
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	turn_opp_live(data) {
 
@@ -298,9 +340,9 @@ export default class SetName extends Component {
 		this.check_turn()
 	}
 
-//	------------------------	------------------------	------------------------
-//	------------------------	------------------------	------------------------
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	check_turn() {
 
@@ -327,7 +369,7 @@ export default class SetName extends Component {
 		// win && console.log('win set: ', set)
 
 		if (win) {
-		
+
 			this.refs[set[0]].classList.add('win')
 			this.refs[set[1]].classList.add('win')
 			this.refs[set[2]].classList.add('win')
@@ -343,7 +385,7 @@ export default class SetName extends Component {
 			//this.socket && this.socket.disconnect();
 
 		} else if (fin) {
-		
+
 			this.setState({
 				game_stat: 'Draw',
 				game_play: false
@@ -358,10 +400,10 @@ export default class SetName extends Component {
 				next_turn_ply: !this.state.next_turn_ply
 			})
 		}
-		
+
 	}
 
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
 	end_game() {
 		this.socket && this.socket.disconnect();
@@ -382,6 +424,8 @@ export default class SetName extends Component {
 			cell.classList.remove('win');
 		});
 	}
+
+
 
 
 

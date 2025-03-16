@@ -128,7 +128,26 @@ function onClientDisconnect() {
 // ----	--------------------------------------------	--------------------------------------------	
 
 // ----	--------------------------------------------	--------------------------------------------	
-// ----	--------------------------------------------	--------------------------------------------	
+// ----	--------------------------------------------	--------------------------------------------
+
+function onChatMessage(data) {
+    if (!this.player || !this.player.opp) {
+        io.to(this.id).emit("chat_error", "You must be paired with an opponent to chat.");
+        return;
+    }
+
+    const message = {
+        from: this.player.name,
+        text: data,
+        timestamp: new Date().toISOString()
+    };
+
+    // Send message to both players in the match
+    //io.to(this.player.sockid).emit("chat_message", message);
+    io.to(this.player.opp.sockid).emit("chat_message", message);
+
+    util.log(`Chat: ${this.player.name} -> ${this.player.opp.name}: ${data}`);
+}
 
 set_game_sock_handlers = function (socket) {
 
@@ -141,5 +160,7 @@ set_game_sock_handlers = function (socket) {
 	socket.on("disconnect", onClientDisconnect);
 
 	socket.on('rematch', onRematch);
+	
+	socket.on('chat_message', onChatMessage);
 
 };
