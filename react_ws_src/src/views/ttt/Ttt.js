@@ -42,7 +42,8 @@ export default class Ttt extends Component {
 													/>}
 					{game_step == 'start_game' && <GameMain 
 														game_type={this.state.game_type}
-														onEndGame={this.gameEnd.bind(this)} 
+														onEndGame={this.gameEnd.bind(this)}
+														onSetType={this.saveGameType.bind(this)} 
 													/>}
 
 				</div>

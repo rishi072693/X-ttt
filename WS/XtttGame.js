@@ -39,6 +39,8 @@ function onNewPlayer(data) {
 	// updAdmin("new player connected - uid:"+data.uid + " - "+data.name);
 
 };
+
+//Function to check if player already exists
 function playerAlreadyExist (newPlayerData) {
 	if(players.length > 0) {
 		let sameNamePlayers = players.filter((player) => player.name == newPlayerData.name) 
@@ -94,6 +96,11 @@ function onTurn(data) {
 	// updAdmin("Q answer - game - qgid:"+data.qgid + "  --  usr:"+this.player.mode + " - uid:"+this.player.uid + "  --  qnum:"+data.qnum + "  --  ans:"+data.ansnum);
 };
 
+//Function to handle rematch
+function onRematch(data) {
+	io.to(this.player.sockid).emit('rematch_start',{"name":this.player.opp.name,"turn":true});
+	io.to(this.player.opp.sockid).emit('rematch_start',{"name":this.player.name,"turn":false});
+}
 // ----	--------------------------------------------	--------------------------------------------	
 // ----	--------------------------------------------	--------------------------------------------	
 
@@ -132,5 +139,7 @@ set_game_sock_handlers = function (socket) {
 	socket.on("ply_turn", onTurn);
 
 	socket.on("disconnect", onClientDisconnect);
+
+	socket.on('rematch', onRematch);
 
 };

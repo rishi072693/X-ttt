@@ -84,6 +84,19 @@ export default class SetName extends Component {
 
 		}.bind(this));
 
+		//Event to trigger rematch
+		this.socket.on('rematch_start', function (data) {
+			// Reset the game state for the rematch
+			this.setState({
+				cell_vals: {},           // Reset cell values (empty board)
+				next_turn_ply: data.turn,     // Player 'x' goes first
+				game_play: true,         // Game is active
+				game_stat: 'Playing with ' + data.name // Set game status message
+			});
+
+			// Clear any winning state (if any)
+			this.clearWinState();
+		}.bind(this));
 
 		this.socket.on('opp_turn', this.turn_opp_live.bind(this));
 
@@ -149,6 +162,10 @@ export default class SetName extends Component {
 				</div>
 
 				<button type='submit' onClick={this.end_game.bind(this)} className='button'><span>End Game <span className='fa fa-caret-right'></span></span></button>
+					&nbsp;
+					&nbsp;
+					&nbsp;
+					{this.props.game_type == 'live' ? <button type='submit' onClick={this.handleRematch.bind(this)} className='button'><span>Rematch <span className='fa fa-caret-right'></span></span></button> : null}
 
 			</div>
 		)
@@ -323,7 +340,7 @@ export default class SetName extends Component {
 				game_play: false
 			})
 
-			this.socket && this.socket.disconnect();
+			//this.socket && this.socket.disconnect();
 
 		} else if (fin) {
 		
@@ -332,7 +349,7 @@ export default class SetName extends Component {
 				game_play: false
 			})
 
-			this.socket && this.socket.disconnect();
+			//this.socket && this.socket.disconnect();
 
 		} else {
 			this.props.game_type != 'live' && this.state.next_turn_ply && setTimeout(this.turn_comp.bind(this), rand_to_fro(500, 1000));
@@ -350,6 +367,20 @@ export default class SetName extends Component {
 		this.socket && this.socket.disconnect();
 
 		this.props.onEndGame()
+	}
+	
+	//handler for rematch click
+	handleRematch() {
+		this.socket.emit('rematch', {});
+	}
+
+	
+	// Remove the 'win' class from all cells
+	clearWinState() {
+		const cells = document.querySelectorAll('td');
+		cells.forEach(cell => {
+			cell.classList.remove('win');
+		});
 	}
 
 
